@@ -1,0 +1,14 @@
+{
+    "medicines": [
+        {
+            "name": "paracetamol",
+            "wav": "paracetamol.wav",
+            "mp3": "paracetamol.mp3"
+        },
+        {
+            "name": "ibuprofen",
+            "wav": "ibuprofen.wav",
+            "mp3": "ibuprofen.mp3"
+        }
+    ]
+}
