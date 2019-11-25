@@ -1,34 +1,42 @@
+var csv = "../../database/db.csv";
+// must define this as a file
+var json;
+let divs = [];
+
 draw = function() {
     // read through db of names
     console.log("hello");
-    alert("hello");
-    // "../../database/words.csv"
 
-    // var xhttp = new XMLHttpRequest();
-    // xhttp.onreadystatechange = function() {
+    if(window.FileReader) {
+        console.log(true);
+    }
 
-    // }
-    // xhttp.open("GET", "../../database/words.csv", true);
-    // xhttp.send();
+    json = csvToJson();
+    console.log("json made");
+    
+    console.log(json);
+    // now convert the JSON object into divs
+    // go through 
+}
 
-    // console.log(file);
-    // var array = JSON.parse(file);
 
-    // // generate div for each name
-    // console.log("before for");
-    // for (var i = 0; i < array.medicines.length; i++) {
-    //     // read db and add to rows arr
-    //     console.log("in for");
-    //     var medicine = array.medicines[i];
+function csvToJson() {
+    var lines = csv.split("\n");
+    var result = [];
+    var headers = lines[0].split(",");
+    console.log(headers);
 
-    //     // write divs to page
-    //     var div = document.createElement("div");
-    //     div.setAttribute("id", "element" + i);
+    for (var i = 1; i < lines.length; i++) {
+        var obj = {};
+        var line = lines[i].split(",");
+        console.log(line);
 
-    //     document.getElementById('element' + i).innerHTML += medicine.name;
-    //     console.log(medicine.name);
-    //     document.getElementById("list").appendChild(div);
-    // }
+        for (var j = 0; j < headers.length; j++) {
+            obj[headers[j]] = line[j];
+        }
 
-    // can I call js of other folder from here?
+        result.push(obj);
+    }
+
+    return JSON.stringify(result);
 }
