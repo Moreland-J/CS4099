@@ -7,7 +7,7 @@ const port = 3000;
 const server = http.createServer((req, res) => {
 //   res.statusCode = 200;
   res.writeHead(200, {'Content-Type': 'text/html'});
-  fs.readFile('./main/', null, function(error, data) {
+  fs.readFile('./main/index.html', null, function(error, data) {
       if (error) {
         res.writeHead(404);
         res.write('File not Found');
@@ -17,11 +17,38 @@ const server = http.createServer((req, res) => {
       }
       res.end();
   });
+  fs.readFile('./main/main.css', null, function(error, data) {
+    if (error) {
+      res.writeHead(404);
+      res.write('File not Found');
+    }
+    else {
+      res.write(data);
+    }
+    res.end();
+});
+fs.readFile('./main/script.js', null, function(error, data) {
+    if (error) {
+      res.writeHead(404);
+      res.write('File not Found');
+    }
+    else {
+      res.write(data);
+    }
+    res.end();
+});
 //   res.end();
 });
 
-// server.listen(port, hostname, () => {
-//   console.log(`Server running at http://${hostname}:${port}/`);
-// });
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
 
-http = createServer(onRequest).listen(3000);
+// http = createServer(onRequest).listen(3000);
+
+// In terminal, "node server.js" in directory
+// https://nodejs.org/en/docs/guides/getting-started-guide/
+
+// not calling JS (or CSS) from HTML
+
+// https://www.quora.com/Can-you-create-an-app-or-website-using-Node-js-HTML-CSS-and-JavaScript

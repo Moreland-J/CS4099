@@ -1,3 +1,8 @@
+var express = require('express');
+var cors = require('cors');
+var app = express();
+app. use(cors);
+
 // var file = '../../database/db.csv';
 var file = 'cs/home/jelm/Documents/CS4099-master/cs4099/database/db.csv';
 var csv;
@@ -23,24 +28,14 @@ draw = function() {
 
 function readFile() {
     // XMLHttpRequest has ben deprecated
-    var f = file;
-    
-    console.log("read");
-    if (f) {
-        console.log("2");
-        var reader = new FileReader();
-        reader.onload = function(e){
-            console.log("3");
-            var contents = e.target.result;
-            console.log("Got the file.\n" +
-                        "Name: " + f.name +
-                        "\nSize: " + f.size + " bytes" +
-                        "\nstarts with: " + contents.substr(0, contents.indexOf("\n")));
-        }
-        reader.readAsText(f);
-        csv = reader.result;
-        csvToJson();
+    var result = null;
+    var xml = new XMLHttpRequest();
+    xml.open("GET", file, false);
+    xml.send();
+    if (xml.status == 200) {
+        result = xml.responseText;
     }
+    return result;
 }
 
 function read(evt) {
@@ -89,3 +84,5 @@ function csvToJson() {
 
 // works reading in file when choose file input is selected
 // doesn't work when using readFile from onload
+
+// https://stackoverflow.com/questions/53258297/access-to-xmlhttprequest-has-been-blocked-by-cors-policy
