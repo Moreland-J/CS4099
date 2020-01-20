@@ -15,10 +15,10 @@ try:
     text = rec.recognize_google(audio)
     print("Quote: " + text)
 
-    if (text == 'paracetamol'):
-        print("equal")
-    else:
-        print("not equal")
+    # if (text == 'paracetamol'):
+    #     print("equal")
+    # else:
+    #     print("not equal")
         
 except sr.UnknownValueError:
     print("Could not understand audio")
@@ -27,3 +27,5 @@ except sr.RequestError as e:
 
 # experiments
 # IBM - Watson text to speech
+
+# hypertrophic cardiomyopathy
