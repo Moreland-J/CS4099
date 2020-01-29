@@ -4,6 +4,8 @@ import sys
 import csv
 import speech_recognition as sr
 
+from slice import Slice
+
 from pydub import AudioSegment
 from pydub.playback import play
 
@@ -37,6 +39,13 @@ def run():
             sys.exit()
         elif (db.__contains__(userIn)):
             word = userIn
+
+            # break into syllables
+            slicer = Slice(word, 8)
+            slicer.slice()
+            for morphs in slicer.morphemes:
+                print(morphs)
+
             # https://pythonbasics.org/python-play-sound/
             song = AudioSegment.from_wav("database/" + userIn + ".wav")
             play(song)
@@ -48,6 +57,7 @@ def run():
     return
 
 # USE API TO LISTEN TO USER VOICE
+# https://pythonprogramminglanguage.com/speech-recognition/
 def listen():
     rec = sr.Recognizer()
     with sr.Microphone() as source:
