@@ -83,6 +83,9 @@ def listen(word):
     try:
         print("Comparing")
         text = rec.recognize_google(audio)
+        # IF YOU WANTED TO SHOW OTHER POSSIBLE HEARD WORDS SEE:
+        # https://www.youtube.com/watch?v=b81-4qcWuTI TIMESTAMP: four:oh-six
+        # REQUIRES PAYMENT PLUS NOT MISSING MEDICAL WORDS
         compare(word, text)
         return
     except sr.UnknownValueError:

@@ -1,5 +1,7 @@
-name, wav, mp3
-paracetamol, paracetamol.wav, paracemtamol.mp3
-ibuprofen, ibuprofen.wav, ibuprofen.mp3
-hypertrophic, hypertrophic.wav, hypertrophic.mp3
-cardiomyopathy, cardiomyopathy.wav, cardiomyopathy.mp3
+name, category
+cardiomyopathy, medicine
+heart, physiology
+hypertrophic, medicine
+ibuprofen, medicine
+paracetamol, medicine
+sphygmomanometer, equipment
