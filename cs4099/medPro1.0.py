@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import os
 import csv
 import speech_recognition as sr
 import sounddevice as sd
@@ -46,10 +47,10 @@ def run():
 
             # https://pythonbasics.org/python-play-sound/
             try:
-                recording = playback(word)
+                recording = playback(word, True)
                 userIn = input("Would you like to attempt the word? Y/N or would you like a repeat? R ")
                 while (userIn == 'r'):
-                    recording = playback(word)
+                    recording = playback(word, True)
                     userIn = input("Would you like to attempt the word? Y/N or would you like a repeat? R ")
                 if (userIn == 'y'):
                     # listen1(recording, word)
@@ -81,58 +82,31 @@ def readDB():
 
 
 # PLAY RECORDING FOR USER
-def playback(word):
+def playback(word, listen):
     recording = AudioSegment.from_wav("database/" + word + ".wav")
-    play(recording)
+    if (listen):
+        play(recording)
     return recording
 
 
 def listen2(recording, word):
     # RECORD .WAV FILE
-    # recorder = pyaudio.PyAudio()
-    # sample = pyaudio.paInt16
-    # ch = 2
-    # fs = 44100
-    # chunk = 1024
-    # seconds = 5
-    # stream = recorder.open(format = sample, channels = ch, rate = fs, frames_per_buffer = chunk, input = True)
-    # frames = []
-    # print("Your turn, speak now...")
-    # for i in range(0, int(fs / chunk * seconds)):
-    #     data = stream.read(chunk)
-    #     frames.append(data)
-
-    # stream.stop_stream()
-    # stream.close()
-    # recorder.terminate()
     fs = 16000
-    d = 3
+    d = 3   # no. of seconds for recording
 
     print("Speak")
     a = sd.rec(int(d * fs), fs, 1, blocking = 'True')
-    sd.play(a, fs)
-    plt.plot(a); plt.title("Speech")
-    plt.show()
+    # sd.play(a, fs)
+    # plt.plot(a); plt.title("Speech")
+    # plt.show()
     filename = "out.wav"
-    print("write")
-    sf.write(filename, a, fs)
-    print("play")
-    recording = AudioSegment.from_wav("out.wav")
-    play(recording)
-
-
     # WRITE AS WAVE FILE
-    # filename = "temp.wav"
-    # wf = wave.open(filename, 'wb')
-    # wf.setnchannels(ch)
-    # wf.setsampwidth(recorder.get_sample_size(sample))
-    # wf.setframerate(fs)
-    # wf.writeframes(b''.join(frames))
-    # wf.close()
+    sf.write(filename, a, fs)
 
-    # tool = CompTool(recording, wf, word)
-    # tool.compare()
+    # COMPARISON
+    tool = CompTool(filename, word)
 
+    os.remove(filename)
 
 # USE API TO LISTEN TO USER VOICE
 # https://pythonprogramminglanguage.com/speech-recognition/
