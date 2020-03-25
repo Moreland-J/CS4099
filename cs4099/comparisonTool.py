@@ -7,8 +7,12 @@ from scipy import signal
 from scipy.io import wavfile
 from scipy.io.wavfile import read
 from scipy.io.wavfile import write
+import sounddevice as sd
 
 class CompTool():
+    cleanOriginal = None
+    cleanAttempt = None
+
     def __init__(self, attempt, word):
         # The original word
         self.attempt = attempt
@@ -20,78 +24,71 @@ class CompTool():
     def compare(self):
         # REMOVE BACKGROUND NOISE
         self.clean()
+        self.spectrogram()
 
     def clean(self):
-        print("clean")
-        '''
-        # USE WAVE
-        attemptWav = wave.open("out.wav", "r")
-        # EXTRACT RAW AUDIO FROM .WAV FILE
-        attemptAud = attemptWav.readframes(-1)
-        attemptAud = np.fromstring(attemptAud, "Int16")
-        plt.plot(attemptAud)
-        plt.show()
-        
-
-        fs = 100
-        xf = abs(sf.fft(attemptAud))
-        length = np.size(attemptAud)
-        freq = (fs / 2) * np.linspace(0, 1, length / 2)
-        xm = (2 / 1) * abs(xf[0:np.size(freq)])
-
-        b, a = signal.butter(4, 100, 'low', analog = True)
-        w, h = signal.freqs(b, a)
-        plt.figure(1)
-        plt.title("Attempt")
-        plt.plot(attemptAud)
-        plt.semilogx(w, 20 * np.log10(abs(h)))
-        plt.show()
-        attemptWav.close()
-        '''
-
+        # CLEAN THE ORIGINAL
         freq, array = read("database/" + self.word + ".wav")
-        plt.subplot(3, 2, 1)
+        plt.subplot(2, 2, 1)
         plt.plot(array)
         plt.title("Original")
         plt.ylabel("Amplitude")
-
-        print("point reached")
-        plt.subplot(3, 2, 2)
+        # HIGH PASS FILTER
         b, a = signal.butter(5, 1000/(freq / 2), btype = 'highpass')
         filtered1 = signal.lfilter(b, a, array)
-        plt.plot(filtered1)
-        plt.title("Cleaned High")
-        plt.ylabel("Amplitude")
-
-        plt.subplot(3, 2, 3)
+        # LOW PASS FILTER
+        plt.subplot(2, 2, 3)
         c, d = signal.butter(5, 380 / (freq / 2), btype = 'lowpass')
-        filtered1 = signal.lfilter(c, d, filtered1)
-        plt.plot(filtered1)
+        filtered2 = signal.lfilter(c, d, filtered1)
+        plt.plot(filtered2)
         plt.title("Cleaned Low")
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("Amplitude")
 
+        # CLEAN THE ATTEMPT
         freq, array = read("out.wav")
-        plt.subplot(3, 2, 4)
+        plt.subplot(2, 2, 2)
         plt.plot(array)
         plt.title("Attempt")
         plt.ylabel("Amplitude")
-
-        plt.subplot(3, 2, 5)
+        # HIGH PASS FILTER
         b, a = signal.butter(5, 1000/(freq / 2), btype = 'highpass')
-        filtered = signal.lfilter(b, a, array)
-        plt.plot(filtered)
-        plt.title("Cleaned High")
-        plt.ylabel("Amplitude")
-
-        plt.subplot(3, 2, 6)
+        filtered3 = signal.lfilter(b, a, array)
+        # LOW PASS THE HIGH PASS
+        plt.subplot(2, 2, 4)
         c, d = signal.butter(5, 380 / (freq / 2), btype = 'lowpass')
-        filtered = signal.lfilter(c, d, filtered)
-        plt.plot(filtered)
+        filtered4 = signal.lfilter(c, d, filtered3)
+        plt.plot(filtered4)
         plt.title("Cleaned Low")
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("Amplitude")
 
+        # ASSIGN GLOBAL VARIABLES
+        self.cleanOriginal = filtered2        
+        self.cleanAttempt = filtered4
+        # WRITE .WAV OF CLEANED
+        # TODO: DELETE
+        fs = 16000
+        filename = "clean.wav"
+        sf.write(filename, self.cleanAttempt, fs)
+
+        plt.show()
+
+    def spectrogram(self):
+        dt = 0.0005
+        t = np.arange(0, 20, dt)
+        s1 = np.sin(2 * np.pi * 100 * t)
+        s2 = 2 * np.sin(2 * np.pi * 400 * t)
+        s2 = s2 * self.cleanAttempt
+
+        x = s1 + s2 + self.cleanAttempt
+        nfft = 1024
+        fs = int(1.0 / dt)
+
+        ax1 = plt.sublplot(2, 1, 1)
+        plt.plot(t, x)
+        plt.subplot(2, 1, 2, sharex = ax1)
+        pxx, freqs, bins, im = plt.specgram(x, NFFT = nfft, Fs = fs, noverlap = 900)
         plt.show()
 
 # STEP 1
