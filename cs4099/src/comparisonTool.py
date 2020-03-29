@@ -1,13 +1,16 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import wave
-import scipy.fftpack as sf
+import soundfile as sf
+import scipy.fftpack as fft
 import scipy.signal as sig
 from scipy import signal
 from scipy.io import wavfile
 from scipy.io.wavfile import read
 from scipy.io.wavfile import write
 import sounddevice as sd
+import cleanEnMasse
 
 class CompTool():
     cleanOriginal = None
@@ -28,7 +31,7 @@ class CompTool():
 
     def clean(self):
         # CLEAN THE ORIGINAL
-        freq, array = read("database/" + self.word + ".wav")
+        freq, array = read("../database/" + self.word + ".wav")
         plt.subplot(2, 2, 1)
         plt.plot(array)
         plt.title("Original")
@@ -72,7 +75,15 @@ class CompTool():
         filename = "clean.wav"
         sf.write(filename, self.cleanAttempt, fs)
 
+        print("clean mass")
+        self.finalClean()
+        print("finish")
+
         plt.show()
+        os.remove(filename)
+
+    def finalClean(self):
+        cleanEnMasse.actOnce(actions = ["find_silence", "sox_denoise", "cleanup", "nothing"], file = "clean.wav")
 
     def spectrogram(self):
         dt = 0.0005

@@ -67,7 +67,7 @@ def run():
 def readDB():
     # https://realpython.com/python-csv/
     print()
-    with open('database/db.csv') as file:
+    with open('../database/db.csv') as file:
         reader = csv.reader(file, delimiter = ',')
         count = 0
         for col in reader:
@@ -83,7 +83,7 @@ def readDB():
 
 # PLAY RECORDING FOR USER
 def playback(word, listen):
-    recording = AudioSegment.from_wav("database/" + word + ".wav")
+    recording = AudioSegment.from_wav("../database/" + word + ".wav")
     if (listen):
         play(recording)
     return recording
