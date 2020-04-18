@@ -3,6 +3,7 @@
 import sys
 import os
 import csv
+import re
 import speech_recognition as sr
 import sounddevice as sd
 import soundfile as sf
@@ -35,7 +36,25 @@ def run():
             word = userIn
 
             # break into syllables
-            slicer = Slice(word, 3)
+            # read from CSV and check if begins with or ends with
+            toPrint = None
+            fixWord = word
+            with open('../database/fixes.csv') as file:
+                reader = csv.reader(file, delimiter = ',')
+                for col in reader:
+                    fix = col[0]
+                    if fix.endswith("-"):
+                        fix = fix.replace("-", "")
+                        # print(word + " " + fix)
+                        if word.startswith(fix):
+                            print(fix + " - ", end = "")
+                            fixWord = re.sub(fix, "", word, 1)
+                    else:
+                        fix.replace("-", "")
+                        if word.endswith(fix):
+                            toPrint = fix
+                            fixWord = re.sub(fix, "", word)
+            slicer = Slice(fixWord, 3)
             slicer.slice()
             count = 0
             for morphs in slicer.morphemes:
@@ -44,6 +63,8 @@ def run():
                 elif count < len(slicer.morphemes) / 2:
                     print(morphs)
                 count += 1
+            if not toPrint == None:
+                print(" - " + toPrint)
 
             # https://pythonbasics.org/python-play-sound/
             try:

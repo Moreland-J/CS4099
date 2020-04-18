@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import re
 import csv
+import time
 
 from bs4 import BeautifulSoup
 from IPython.display import display_html
@@ -22,66 +23,81 @@ def scrape():
             fixes.append(line[start:end][3:])
 
 def clean():
-    clean = False
-    count = 0
-    while not clean:
-        # NEW SECTION FOR GOING THROUGH EACH OF THE FIXES
-        for num, fix in enumerate(fixes, start = 0):
-            print(num)
-            # REMOVES NON-FIXES
-            if '-' not in fix:
-                fixes.remove(fix)
-                count = 0
-                print("no -")
+    # NEW SECTION FOR GOING THROUGH EACH OF THE FIXES
+    clean = []
+    change = []
+    delete = []
+    for num, fix in enumerate(fixes, start = 0):
+        # REMOVES NON-FIXES
+        if '-' not in fix:
+            delete.append(fix)
+            # print("deleted: " + fix + " " + str(num))
+            continue
+        
+        if check(fix):
+            change.append(fix)
+            # print("error in: " + fix)
+        else:
+            clean.append(fix)
+
+    fixes = clean
+
+    print("changes")
+    changed = []
+    while len(change) > 0:
+        for i, ch in enumerate(change, start = 0):
 
             # TACKLE LISTS FIRST
             # ADD EXTRAS TO END OF FIXES (or insert)
-            elif "," in fix:
+            if "," in ch:
                 print("split ,")
-                l = re.compile(",").split(fix)
-                fixes.remove(fix)
-                for i in range(0, len(l)):
-                    fixes.append(l[i])
-                count = 0
-            else:
-                count += 1
+                l = ch.split(",")
+                change.remove(ch)
+                for j in range(0, len(l)):
+                    l[j] = l[j].strip(" ")
+                    if cleaned(fix):
+                        changed.append(l[j])
+                    elif "-" in l[j]:
+                        delete.append(l[j])
+                    else:
+                        change.insert(l[j], i)
+                print(ch)
+            # Done me thinks
 
             # SECONDLY, HYPERLINKS
             # DETECT href AND DETECT ">[fix]</a>" REPEAT <b> PRACTISE
-            if "href" in fix:
+            if "href" in ch:
                 print("href")
-                start = fix.find('>')
-                end = fix.find('</a>')
-                fixes[num] = fix[start:end][1:0]
-                count = 0
+                start = ch.find('>')
+                end = ch.find('</a>')
+                ch = ch[start:end][1:0]
                 # SPECIAL CASE WHERE BRACKETS AFTER HYPERLINK </a>
-            else:
-                count += 1
 
-            if " or " in fix:
-                temp = fix.split(" or ")
-                fixes.remove(fix)
+            if " or " in ch:
+                temp = ch.split(" or ")
+                del ch
                 fixes.insert(num, temp[0])
                 fixes.insert(num + 1, temp[1])
 
             # THEN HANDLE BRACKETS WITH ONLY ONE LETTER INSIDE
             # REMOVE BRACKETS AND ADD BOTH WITH AND WITHOUT ONE LETTER TO LIST
-            if "(" in fix:
-                print("()")
-                start = fix.find('(')
-                end = fix.find(')')
-                fixes.append(fix + fix[start:end][1:0])
-                if fix.startswith('-'):
-                    fixes[num] = fix[0:start]
-                elif fix.endswith('-'):
-                    fixes[num] = fix[0:start] + '-'
-                count = 0
-            else:
-                count += 1
+            if "(" in ch:
+                print(ch + " ()")
+                start = ch.find('(')
+                end = ch.find(')')
+                change.append(ch + ch[start:end][1:0])
+                if ch.startswith('-'):
+                    ch = ch[0:start]
+                elif ch.endswith('-'):
+                    ch = ch[0:start] + '-'
 
-        # MARK TO EXIT WHILE LOOP IF ALL ELEMENTS OF LIST ARE CLEAR OF MISTAKES
-        if count == len(fixes):
-            clean = True
+def cleaned(fix):
+    return not ("-" not in fix or "," in fix or "href" in fix or " or " in fix or "(" in fix)
+
+def cleanSymbols(change):
+    # PERFORM SPLIT ACTIONS
+    # IF STILL CONTAINS PROBLEMS THEN RECURSE
+    print()
 
 def writeCSV():
     legit = []
