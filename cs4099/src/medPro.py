@@ -22,6 +22,7 @@ from pydub.playback import play
 running = True
 selected = 1
 db = []
+categories = []
 # selected acts as db index
 
 # CONSTANT RUNNING INTERACTION
@@ -29,9 +30,20 @@ def run():
     readDB()
 
     while (running):
-        userIn = input("Type the word you'd like to hear or 'exit' to leave the program.\n")
+        userIn = input("Type the word you'd like to hear, 'filter' to filter results or 'exit' to leave the program.\n")
         if (userIn == "exit"):
             sys.exit()
+        elif userIn == "filter":
+            filter = None
+            while filter == None:
+                filter = input("AZ or ZA or section ordering? ")
+            if filter == "AZ":
+                displayDB(1, None)
+            elif filter == "ZA":
+                displayDB(2, None)
+            else:
+                displayDB(3, filter)
+
         elif (db.__contains__(userIn)):
             word = userIn
 
@@ -96,11 +108,30 @@ def readDB():
                 count += 1
             else:
                 db.append(col[0])
+                categories.append(col[1].strip())
                 print(db[count - 1])
                 count += 1
     print()
     return
 
+def displayDB(ordering, category):
+    # 1 = A-Z, 2 = Z-A, 3 = section
+    print()
+    if ordering == 1:
+        for word in db:
+            print(word)
+    elif ordering == 2:
+        db.reverse()
+        for word in db:
+            print(word)
+        db.reverse()
+    elif ordering == 3:
+        for i in range(len(db)):
+            if categories[i] == category:
+                print(db[i])
+
+    print()
+    return
 
 # PLAY RECORDING FOR USER
 def playback(word, listen):
