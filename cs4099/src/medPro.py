@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from tkinter import *
 
 import sys
 import os
@@ -111,24 +112,38 @@ def readDB():
                 categories.append(col[1].strip())
                 print(db[count - 1])
                 count += 1
+                terms.insert(count, col[0])
     print()
+    scroll = Scrollbar(frame, orient = "vertical")
+    scroll.config(command = terms.yview)
+    scroll.pack(side = "right", fill = "y")
+    terms.config(yscrollcommand = scroll.set)
+    root.mainloop()
     return
 
 def displayDB(ordering, category):
     # 1 = A-Z, 2 = Z-A, 3 = section
+    terms.delete(1, terms.size())
     print()
+    count = 1
     if ordering == 1:
         for word in db:
             print(word)
+            terms.insert(count, word)
+            count += 1
     elif ordering == 2:
         db.reverse()
         for word in db:
             print(word)
+            terms.insert(count, word)
+            count += 1
         db.reverse()
     elif ordering == 3:
         for i in range(len(db)):
             if categories[i] == category:
                 print(db[i])
+                terms.insert(count, word)
+                count += 1
 
     print()
     return
@@ -189,5 +204,14 @@ def compare(word, userWord):
     else:
         print("Not quite.")
     return
+
+root = Tk()
+root.title("MedPro")
+root.geometry("500x500")
+frame = Frame(root)
+frame.pack()
+terms = Listbox(frame)
+terms.pack(side = "left", fill = "y")
+
 
 run()
