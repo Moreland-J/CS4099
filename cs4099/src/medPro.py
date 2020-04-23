@@ -87,14 +87,84 @@ def run():
                     recording = playback(word, True)
                     userIn = input("Would you like to attempt the word? Y/N or would you like a repeat? R ")
                 if (userIn == 'y'):
-                    # listen1(recording, word)
-                    listen2(recording, word)
+                    listen1(recording, word)
+                    # listen2(recording, word)
             except Exception as e:
                 print(e)
                 print("Audio recording does not exist for this word.")
         else:
             continue
     return
+
+def uiRun(userIn):
+    if (db.__contains__(userIn)):
+            word = userIn
+
+            # break into syllables
+            # read from CSV and check if begins with or ends with
+            toPrint = None
+            fixWord = word
+            with open('../database/fixes.csv') as file:
+                reader = csv.reader(file, delimiter = ',')
+                for col in reader:
+                    fix = col[0]
+                    if fix.endswith("-"):
+                        fix = fix.replace("-", "")
+                        # print(word + " " + fix)
+                        if word.startswith(fix):
+                            print(fix + " - ", end = "")
+                            fixWord = re.sub(fix, "", word, 1)
+                    else:
+                        fix.replace("-", "")
+                        if word.endswith(fix):
+                            toPrint = fix
+                            fixWord = re.sub(fix, "", word)
+            slicer = Slice(fixWord, 3)
+            slicer.slice()
+            count = 0
+            split = ""
+            for morphs in slicer.morphemes:
+                if count < len(slicer.morphemes) / 2 and count != len(slicer.morphemes) / 2 - 1:
+                    split = split + morphs + " - "
+                    print(morphs + " - ", end = "")
+                elif count < len(slicer.morphemes) / 2:
+                    split = split + morphs
+                    print(morphs)
+                count += 1
+            if not toPrint == None:
+                split = split + " - " + toPrint
+                print(" - " + toPrint)
+            
+            popup = Tk()
+            popup.geometry("300x500")
+            popup.title("Syllables")
+            frame5 = Frame(popup)
+            frame5.pack()
+            label = Label(frame5, text = split)
+            label.pack(pady = 10)
+            scroll = Scrollbar(popup)
+            scroll.pack(side = RIGHT, fill = Y)
+            scroll.config(command = popup.yview)
+
+            try:
+                frame6 = Frame(popup)
+                frame6.pack()
+                replay = Button(frame6, text = "Replay", command = lambda: playback(word, True))
+                replay.pack(side = "left", padx = 5, pady = 10)
+                attempt = Button(frame6, text = "Attempt", command = lambda: listen1(recording, word, popup))
+                attempt.pack(side = "left", padx = 5, pady = 10)
+                cancel = Button(frame6, text = "Cancel", command = lambda: close(popup))
+                cancel.pack(side = "left", padx = 5, pady = 10)
+                recording = playback(word, True)
+
+            except Exception as e:
+                print(e)
+                print("Audio recording does not exist for this word.")
+                if not "Audio recording does not exist for this word." in split:
+                    split = split + " - " + "Audio recording does not exist for this word."
+
+def close(root):
+    root.destroy()
 
 
 # READ DATABASE CSV FILE AND PRINT TO INTERFACE
@@ -123,7 +193,7 @@ def readDB():
 
 def displayDB(ordering, category):
     # 1 = A-Z, 2 = Z-A, 3 = section
-    terms.delete(1, terms.size())
+    terms.delete(0, terms.size())
     print()
     count = 1
     if ordering == 1:
@@ -142,7 +212,7 @@ def displayDB(ordering, category):
         for i in range(len(db)):
             if categories[i] == category:
                 print(db[i])
-                terms.insert(count, word)
+                terms.insert(count, db[i])
                 count += 1
 
     print()
@@ -154,6 +224,27 @@ def playback(word, listen):
     if (listen):
         play(recording)
     return recording
+
+
+# USE API TO LISTEN TO USER VOICE
+# https://pythonprogramminglanguage.com/speech-recognition/
+def listen1(recording, word, result):
+    # GOOGLE API
+    rec = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Speak")
+        audio = rec.listen(source)
+    try:
+        print("Comparing")
+        text = rec.recognize_google(audio)
+        # IF YOU WANTED TO SHOW OTHER POSSIBLE HEARD WORDS SEE:
+        # https://www.youtube.com/watch?v=b81-4qcWuTI TIMESTAMP: four:oh-six
+        # REQUIRES PAYMENT PLUS NOT MISSING MEDICAL WORDS
+        compare(word, text, result)
+    except sr.UnknownValueError:
+        print("Could not understand audio")
+    except sr.RequestError as e:
+        print("API error; ".format(e))            
 
 
 def listen2(recording, word):
@@ -175,35 +266,31 @@ def listen2(recording, word):
 
     os.remove(filename)
 
-# USE API TO LISTEN TO USER VOICE
-# https://pythonprogramminglanguage.com/speech-recognition/
-def listen1(recording, word):
-    # GOOGLE API
-    rec = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Speak")
-        audio = rec.listen(source)
-    try:
-        print("Comparing")
-        text = rec.recognize_google(audio)
-        # IF YOU WANTED TO SHOW OTHER POSSIBLE HEARD WORDS SEE:
-        # https://www.youtube.com/watch?v=b81-4qcWuTI TIMESTAMP: four:oh-six
-        # REQUIRES PAYMENT PLUS NOT MISSING MEDICAL WORDS
-        compare(word, text)
-        return
-    except sr.UnknownValueError:
-        print("Could not understand audio")
-    except sr.RequestError as e:
-        print("API error; ".format(e))            
-
 
 # COMPARE DB WORD TO USER ATTEMPT
-def compare(word, userWord):
+def compare(word, userWord, popup):
+    frame7 = Frame(popup)
+    frame7.pack()
+    response = Label(frame7, text = "")
+    response.pack(pady = 10)
     if (word == userWord):
         print("Correct!")
+        # result.set("Correct!")
+        response.configure(text = "Correct!")
     else:
         print("Not quite.")
+        # result.set("Not quite.")
+        response.configure(text = "Not quite!")
     return
+
+
+def inputCategory():
+    popup = Tk()
+    popup.title("Filter Category")
+    filter = Entry(popup)
+    filter.pack()
+    conf = Button(popup, text = "Confirm", command = lambda: displayDB(3, filter.get()))
+    conf.pack()
 
 root = Tk()
 root.title("MedPro")
@@ -212,6 +299,26 @@ frame = Frame(root)
 frame.pack()
 terms = Listbox(frame)
 terms.pack(side = "left", fill = "y")
+frame3 = Frame(root)
+frame3.pack()
+input = Entry(frame3, width = 50)
+input.pack(padx = 20, pady = 10, side = "left")
+input.insert(0, "What word would you like to hear?")
+confirm = Button(frame3, text = "Confirm", width = 10, height = 2, command = lambda: uiRun(input.get()))
+confirm.pack(padx = 5, pady = 10, side = "left")
 
+frame2 = Frame(root)
+frame2.pack()
+az = Button(frame2, text = "A-Z", width = 10, height = 2, command = lambda: displayDB(1, None))
+az.pack(padx = 5, side = "left")
+za = Button(frame2, text = "Z-A", width = 10, height = 2, command = lambda: displayDB(2, None))
+za.pack(padx = 5, side = "left")
+cate = Button(frame2, text = "Category", width = 10, height = 2, command = lambda: inputCategory())
+cate.pack(padx = 5, side = "left")
+
+frame4 = Frame(root)
+frame4.pack()
+exit = Button(frame4, text = "exit", width = 10, height = 2, command = lambda: sys.exit())
+exit.pack(pady = 10)
 
 run()
