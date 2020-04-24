@@ -106,14 +106,18 @@ def uiRun(userIn):
             fixWord = word
             with open('../database/fixes.csv') as file:
                 reader = csv.reader(file, delimiter = ',')
+                split = ""
                 for col in reader:
                     fix = col[0]
+                    # PREFIX
                     if fix.endswith("-"):
                         fix = fix.replace("-", "")
                         # print(word + " " + fix)
                         if word.startswith(fix):
+                            split = fix + " - "
                             print(fix + " - ", end = "")
                             fixWord = re.sub(fix, "", word, 1)
+                    # SUFFIX
                     else:
                         fix.replace("-", "")
                         if word.endswith(fix):
@@ -122,7 +126,6 @@ def uiRun(userIn):
             slicer = Slice(fixWord, 3)
             slicer.slice()
             count = 0
-            split = ""
             for morphs in slicer.morphemes:
                 if count < len(slicer.morphemes) / 2 and count != len(slicer.morphemes) / 2 - 1:
                     split = split + morphs + " - "
@@ -131,30 +134,34 @@ def uiRun(userIn):
                     split = split + morphs
                     print(morphs)
                 count += 1
+            # SUFFIX ADDITION
             if not toPrint == None:
                 split = split + " - " + toPrint
                 print(" - " + toPrint)
             
             popup = Tk()
-            popup.geometry("300x500")
+            popup.geometry("300x300")
             popup.title("Syllables")
             frame5 = Frame(popup)
             frame5.pack()
             label = Label(frame5, text = split)
             label.pack(pady = 10)
-            scroll = Scrollbar(popup)
-            scroll.pack(side = RIGHT, fill = Y)
-            scroll.config(command = popup.yview)
+            # scroll = Scrollbar(popup)
+            # scroll.pack(side = RIGHT, fill = Y)
+            # scroll.config(command = popup.yview)
 
             try:
                 frame6 = Frame(popup)
                 frame6.pack()
+                
                 replay = Button(frame6, text = "Replay", command = lambda: playback(word, True))
                 replay.pack(side = "left", padx = 5, pady = 10)
-                attempt = Button(frame6, text = "Attempt", command = lambda: listen1(recording, word, popup))
+                attempt = Button(frame6, text = "Attempt", command = lambda: listen1(recording, word, popup, frame7))
                 attempt.pack(side = "left", padx = 5, pady = 10)
                 cancel = Button(frame6, text = "Cancel", command = lambda: close(popup))
                 cancel.pack(side = "left", padx = 5, pady = 10)
+                frame7 = Frame(popup)
+                frame7.pack()
                 recording = playback(word, True)
 
             except Exception as e:
@@ -220,16 +227,51 @@ def displayDB(ordering, category):
 
 # PLAY RECORDING FOR USER
 def playback(word, listen):
-    recording = AudioSegment.from_wav("../database/" + word + ".wav")
+    global speedbox
+    speed = 1.0
+    if not speedbox.get() == "":
+        try:
+            speed = float(speedbox.get())
+        except:
+            print("not a float")
+            speed = 1.0
+    recording = AudioSegment.from_file("../database/" + word + ".wav", "wav")
     if (listen):
-        play(recording)
+        sound_with_altered_frame_rate = recording
+        if speed < 1.51 and speed > 0.39:
+            print(speed)
+            sound_with_altered_frame_rate = recording._spawn(recording.raw_data, overrides = {
+                "frame_rate": int(recording.frame_rate * speed)
+            })
+            sound_with_altered_frame_rate.set_frame_rate(recording.frame_rate)
+        play(sound_with_altered_frame_rate)
     return recording
 
+def playbackUser(currAttempt):
+    global speedbox
+    speed = 1.0
+    if not speedbox.get() == "":
+        try:
+            speed = float(speedbox.get())
+        except:
+            print("not a float")
+            speed = 1.0
+    recording = AudioSegment.from_file("out" + str(currAttempt) + ".wav", "wav")
+    adapted = recording
+    if speed < 1.51 and speed > 0.39:
+        print(speed)
+        adapted = recording._spawn(recording.raw_data, overrides = {
+            "frame_rate": int(recording.frame_rate * speed)
+        })
+        adapted.set_frame_rate(recording.frame_rate)
+    play(adapted)
+    return recording
 
 # USE API TO LISTEN TO USER VOICE
 # https://pythonprogramminglanguage.com/speech-recognition/
-def listen1(recording, word, result):
+def listen1(recording, word, result, frame):
     # GOOGLE API
+    frame.destroy()
     rec = sr.Recognizer()
     with sr.Microphone() as source:
         print("Speak")
@@ -273,6 +315,9 @@ def compare(word, userWord, popup):
     frame7.pack()
     response = Label(frame7, text = "")
     response.pack(pady = 10)
+    # wav = attempt - 1
+    # playback = Button(frame7, text = "Repeat", command = lambda: playbackUser(wav))
+    # playback.pack(padx = 5)
     if (word == userWord):
         print("Correct!")
         # result.set("Correct!")
@@ -297,8 +342,12 @@ root.title("MedPro")
 root.geometry("500x500")
 frame = Frame(root)
 frame.pack()
-terms = Listbox(frame)
+terms = Listbox(frame, width = 30)
 terms.pack(side = "left", fill = "y")
+speedlbl = Label(frame, text = "Enter a value between 0.4 and 1.5\n to change playback speed.")
+speedlbl.pack(side = "right", padx = 5)
+speedbox = Entry(frame, width = 5)
+speedbox.pack(side = "right", padx = 10)
 frame3 = Frame(root)
 frame3.pack()
 input = Entry(frame3, width = 50)
