@@ -201,6 +201,8 @@ def readDB():
 def displayDB(ordering, category):
     # 1 = A-Z, 2 = Z-A, 3 = section
     terms.delete(0, terms.size())
+    if category == "all":
+        ordering = 1
     print()
     count = 1
     if ordering == 1:
@@ -331,11 +333,13 @@ def compare(word, userWord, popup):
 
 def inputCategory():
     popup = Tk()
-    popup.title("Filter Category")
+    popup.geometry("200x100")
+    popup.title("Filter")
     filter = Entry(popup)
-    filter.pack()
+    filter.insert(0, "category")
+    filter.pack(pady = 10)
     conf = Button(popup, text = "Confirm", command = lambda: displayDB(3, filter.get()))
-    conf.pack()
+    conf.pack(pady = 10)
 
 root = Tk()
 root.title("MedPro")
@@ -347,6 +351,7 @@ terms.pack(side = "left", fill = "y")
 speedlbl = Label(frame, text = "Enter a value between 0.4 and 1.5\n to change playback speed.")
 speedlbl.pack(side = "right", padx = 5)
 speedbox = Entry(frame, width = 5)
+speedbox.insert(0, "1.0")
 speedbox.pack(side = "right", padx = 10)
 frame3 = Frame(root)
 frame3.pack()
