@@ -1,3 +1,7 @@
+import bs4
+import IPython
+import lxml
+
 import requests
 import pandas as pd
 import re

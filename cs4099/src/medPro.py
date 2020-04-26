@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+import tkinter
+import scipy
+import pydub
 from tkinter import *
 
 import sys
@@ -338,7 +341,7 @@ def inputCategory():
     filter = Entry(popup)
     filter.insert(0, "category")
     filter.pack(pady = 10)
-    conf = Button(popup, text = "Confirm", command = lambda: displayDB(3, filter.get()))
+    conf = Button(popup, text = "Confirm", command = lambda: displayDB(3, filter.get().lower()))
     conf.pack(pady = 10)
 
 root = Tk()
