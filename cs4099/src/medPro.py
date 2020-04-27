@@ -159,7 +159,7 @@ def uiRun(userIn):
                 
                 replay = Button(frame6, text = "Replay", command = lambda: playback(word, True))
                 replay.pack(side = "left", padx = 5, pady = 10)
-                attempt = Button(frame6, text = "Attempt", command = lambda: listen1(recording, word, popup, frame7))
+                attempt = Button(frame6, text = "Attempt", command = lambda: listen(recording, word, popup, frame7))
                 attempt.pack(side = "left", padx = 5, pady = 10)
                 cancel = Button(frame6, text = "Cancel", command = lambda: close(popup))
                 cancel.pack(side = "left", padx = 5, pady = 10)
@@ -172,6 +172,13 @@ def uiRun(userIn):
                 print("Audio recording does not exist for this word.")
                 if not "Audio recording does not exist for this word." in split:
                     split = split + " - " + "Audio recording does not exist for this word."
+
+def listen(recording, word, popup, frame7):
+    global ch
+    if ch.get() == 0:
+        listen1(recording, word, popup, frame7)
+    else:
+        listen2(recording, word, popup, frame7)
 
 def close(root):
     root.destroy()
@@ -279,7 +286,7 @@ def listen1(recording, word, result, frame):
     frame.destroy()
     rec = sr.Recognizer()
     with sr.Microphone() as source:
-        print("Speak")
+        print("Speak 1")
         audio = rec.listen(source)
     try:
         print("Comparing")
@@ -293,25 +300,32 @@ def listen1(recording, word, result, frame):
     except sr.RequestError as e:
         print("API error; ".format(e))            
 
+attempt = 0
+def listen2(recording, word, result, frame):
+    global attempt
+    attempt += 1
+    frame7 = Frame(result)
+    frame7.pack()
+    response = Button(frame7, text = attempt, command = lambda: playbackUser(response['text']))
+    response.pack(pady = 10)
 
-def listen2(recording, word):
     # RECORD .WAV FILE
     fs = 16000
     d = 3   # no. of seconds for recording
 
-    print("Speak")
+    print("Speak 2")
     a = sd.rec(int(d * fs), fs, 1, blocking = 'True')
     # sd.play(a, fs)
     # plt.plot(a); plt.title("Speech")
     # plt.show()
-    filename = "out.wav"
+    filename = "out" + str(attempt) + ".wav"
     # WRITE AS WAVE FILE
     sf.write(filename, a, fs)
 
     # COMPARISON
     tool = CompTool(filename, word)
 
-    os.remove(filename)
+    # os.remove(filename)
 
 
 # COMPARE DB WORD TO USER ATTEMPT
@@ -377,5 +391,9 @@ frame4 = Frame(root)
 frame4.pack()
 exit = Button(frame4, text = "exit", width = 10, height = 2, command = lambda: sys.exit())
 exit.pack(pady = 10)
+ch = IntVar()
+check = Checkbutton(frame4, text = "Clean audio? No feedback will be given.", variable = ch)
+check.pack(side = "right", padx = 10, pady = 10)
+
 
 run()

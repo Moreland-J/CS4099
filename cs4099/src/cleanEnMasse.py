@@ -79,13 +79,17 @@ def doActions(actions, params):
         cleanup()
 
 def actOnce(actions, file):
-    createFiles()
-    if "find_silence" in actions:
-            findSilence(file)
-    if "sox_denoise" in actions:
-        soxDenoise(file)
-    if "cleanup" in actions:
-        cleanup()
+    try:
+        createFiles()
+        if "find_silence" in actions:
+                findSilence(file)
+        if "sox_denoise" in actions:
+            soxDenoise(file)
+        if "cleanup" in actions:
+            cleanup()
+    except FileNotFoundError as e:
+        print(e)
+        return
 
 def createFiles():
     try:

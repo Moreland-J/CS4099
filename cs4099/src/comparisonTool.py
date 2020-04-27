@@ -32,6 +32,7 @@ class CompTool():
         self.spectrogram()
 
     def clean(self):
+        print("Clean")
         # CLEAN THE ORIGINAL
         freq, array = read("../database/" + self.word + ".wav")
         plt.subplot(2, 2, 1)
@@ -67,22 +68,23 @@ class CompTool():
         plt.title("Cleaned Low")
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("Amplitude")
+        print("defos")
 
         # ASSIGN GLOBAL VARIABLES
+        print("Here")
         self.cleanOriginal = filtered2        
         self.cleanAttempt = filtered4
         # WRITE .WAV OF CLEANED
         # TODO: DELETE
         fs = 16000
         filename = "clean.wav"
+        print(filename)
         sf.write(filename, self.cleanAttempt, fs)
 
         print("clean mass")
         self.finalClean()
         print("finish")
-
         plt.show()
-        os.remove(filename)
 
     def finalClean(self):
         cleanEnMasse.actOnce(actions = ["find_silence", "sox_denoise", "cleanup", "nothing"], file = "clean.wav")
